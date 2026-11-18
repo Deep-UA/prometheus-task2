@@ -14,8 +14,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
-    - name: Debug docker storage (temporary)
-      run: docker version --format '{{.Server.Version}}' && docker info --format '{{.Driver}} {{.DriverStatus}}'
     - name: Build and start containers for a services
       run: docker compose up -d
     - name: Test containers functionality

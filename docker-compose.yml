@@ -20,13 +20,19 @@ services:
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.53.0
     container_name: cadvisor
+    # Docker 29 stores containers via containerd (namespace "moby"); cAdvisor's
+    # docker handler can't read that layout, so read containers from containerd.
+    command:
+      - --containerd=/containerd.sock
+      - --containerd-namespace=moby
+      - --docker=unix:///nonexistent.sock
     privileged: true
     devices:
       - /dev/kmsg
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/containerd/containerd.sock:/containerd.sock:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
