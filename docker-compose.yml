@@ -1,1 +1,42 @@
+services:
+  webapp:
+    build: .
+    container_name: webapp
+    environment:
+      - APP_PORT=8080
+      - REDIS_ADDRESS=redis
+      - REDIS_PORT=6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+
+  # Exposes per-container metrics such as container_cpu_usage_seconds_total.
+  # Not published to the host: it also listens on 8080.
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.53.0
+    container_name: cadvisor
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+  prometheus:
+    image: prom/prometheus:v2.53.5
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - cadvisor
